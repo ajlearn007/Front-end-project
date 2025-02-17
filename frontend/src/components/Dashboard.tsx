@@ -23,10 +23,21 @@ const Dashboard = () => {
       });
   }, [navigate]);
 
+  // ✅ Logout Function
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remove JWT from localStorage
+    navigate("/login"); // Redirect to login page
+  };
+
   return (
     <div>
       <h2>Dashboard</h2>
       {userData ? <pre>{JSON.stringify(userData, null, 2)}</pre> : <p>Loading...</p>}
+
+      {/* ✅ Logout Button */}
+      <button onClick={handleLogout} style={{ marginTop: "10px", padding: "10px" }}>
+        Logout
+      </button>
     </div>
   );
 };
