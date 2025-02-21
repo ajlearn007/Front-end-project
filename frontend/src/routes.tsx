@@ -7,9 +7,10 @@ const AppRoutes = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/frontend/src/components/login.tsx" element={<Login />} />
-        <Route path="/frontend/src/components/Signup.tsx" element={<Signup />} />
-        <Route path="/frontend/src/components/Dashboard.tsx" element={<Dashboard />} />
+        <Route path="/" element={<Login />} />  {/* Default route */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );
