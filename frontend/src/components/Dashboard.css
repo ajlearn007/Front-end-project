@@ -1,0 +1,50 @@
+.dashboard-layout {
+    min-height: 100vh;
+  }
+  
+  .sidebar {
+    background: linear-gradient(135deg, #d7d7d7, #fad0c4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .sidebar-title {
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .logout-button {
+    width: 100%;
+    margin-top: auto;
+    background: #ff4d4f;
+    border: none;
+  }
+  
+  .dashboard-header {
+    background: #6a11cb;
+    background: linear-gradient(135deg, #a983d2, #c7d8f5);
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .dashboard-content {
+    padding: 20px;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .user-avatar {
+    background-color: #0084ff;
+    margin-right: 10px;
+  }
+  
+  .user-name {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
