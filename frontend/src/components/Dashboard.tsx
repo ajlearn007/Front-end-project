@@ -1,99 +1,107 @@
-import { useEffect, useState } from "react";
-import api from "../api";
-import { useNavigate } from "react-router-dom";
-import { Layout, Table, Button, Avatar, Typography, message } from "antd";
-import { UserOutlined, LogoutOutlined, DeleteOutlined } from "@ant-design/icons";
-import "./Dashboard.css"; // Ensure this file exists
+import React, { useState } from "react";
+import { Input, Button, Card, Spin } from "antd";
+import { SendOutlined, LoadingOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
+import axios from "axios";
+import "./Dashboard.css";
 
-const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
+const Dashboard: React.FC = () => {
+  const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-const Dashboard = () => {
-  const [userData, setUserData] = useState([]);
-  const navigate = useNavigate();
+  const sendMessage = async () => {
+    if (!input.trim()) return;
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    const userMessage = { sender: "You", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
 
-    api
-      .get("/users/", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setUserData(res.data))
-      .catch(() => {
-        localStorage.removeItem("token");
-        navigate("/login");
-      });
-  }, [navigate]);
-
-  const handleRemoveUser = async (username: string) => {
     try {
-      await api.delete(`/users/${username}/`);
-      setUserData((prevData) => prevData.filter((user: any) => user.username !== username));
-      message.success("User removed successfully!");
+      const response = await axios.post(
+        "http://localhost:8000/chat/",
+        { prompt: input },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is stored after login
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const aiMessage = { sender: "AI", text: response.data.response };
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      message.error("Failed to remove user!");
+      setMessages((prev) => [
+        ...prev,
+        { sender: "AI", text: "Sorry, I couldn't generate a response." },
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
-  const columns = [
-    {
-      title: "User",
-      dataIndex: "username",
-      key: "username",
-      render: (text: string) => (
-        <div className="user-info">
-          <Avatar size="large" icon={<UserOutlined />} className="user-avatar" />
-          <span className="user-name">{text}</span>
-        </div>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_: any, record: any) => (
-        <Button
-          type="primary"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => handleRemoveUser(record.username)}
-        >
-          Remove
-        </Button>
-      ),
-    },
-  ];
 
   return (
-    <Layout className="dashboard-layout">
-      <Sider width={200} className="sidebar">
-        <Title level={3} className="sidebar-title">Dashboard</Title>
+    <div className="dashboard-container">
+      <motion.h2
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="chat-title"
+      >
+        AI Chatbox
+      </motion.h2>
+
+      <div className="chat-container">
+        {messages.map((msg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+            className={`message ${msg.sender === "You" ? "user-msg" : "ai-msg"}`}
+          >
+            <Card size="small" bordered={false} className="chat-card">
+              <strong>{msg.sender}:</strong> {msg.text}
+            </Card>
+          </motion.div>
+        ))}
+
+        {loading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 2 }}
+            transition={{ duration: 2 }}
+            className="loading-msg"
+          >
+            <Spin indicator={<LoadingOutlined />} /> AI is typing...
+          </motion.div>
+        )}
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="input-container"
+      >
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          onPressEnter={sendMessage}
+          className="chat-input pastel-input"
+        />
         <Button
           type="primary"
-          icon={<LogoutOutlined />}
-          className="logout-button"
-          onClick={handleLogout}
-        >
-          Logout
-        </Button>
-      </Sider>
-
-      <Layout>
-        <Header className="dashboard-header">
-          <Title level={2} style={{ color: "#fff" }}>Users</Title>
-        </Header>
-        <Content className="dashboard-content">
-          <Table columns={columns} dataSource={userData} rowKey="username" />
-        </Content>
-      </Layout>
-    </Layout>
+          icon={<SendOutlined />}
+          onClick={sendMessage}
+          disabled={loading}
+          className="send-btn pastel-btn"
+        />
+      </motion.div>
+    </div>
   );
 };
 

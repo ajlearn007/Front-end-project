@@ -17,10 +17,24 @@ const Login = () => {
       const token = response.data.access_token;
 
       localStorage.setItem("token", token);
-      message.success("Login successful! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 1500);
+      message.success("Login successful! Redirecting...", 1.2); // Adjusted timeout
+      setTimeout(() => navigate("/dashboard"), 1200);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || "Login failed");
+      console.error("Login Error:", err.response);
+
+      if (err.response) {
+        const errorMessage = err.response.data?.detail || "Login failed";
+
+        if (errorMessage.toLowerCase().includes("invalid")) {
+          message.error("Invalid username or password. Please check your credentials.");
+        } else if (err.response.status === 500) {
+          message.error("Server error. Please try again later.");
+        } else {
+          message.error(errorMessage);
+        }
+      } else {
+        message.error("Network error. Please check your connection.");
+      }
     } finally {
       setLoading(false);
     }
@@ -33,14 +47,12 @@ const Login = () => {
         margin: "50px auto",
         padding: 20,
         textAlign: "center",
-        backgroundColor: "#f0f2f5", // Light gray background
+        backgroundColor: "#f0f2f5",
         borderRadius: "10px",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
       }}
     >
-      <Title level={3} style={{ color: "#1890ff" }}> {/* Blue heading */}
-        Login
-      </Title>
+      <Title level={3} style={{ color: "#1890ff" }}>Login</Title>
       <Form layout="vertical" onFinish={handleLogin}>
         <Form.Item
           label={<Text strong style={{ color: "#333" }}>Username</Text>}
@@ -64,7 +76,12 @@ const Login = () => {
       </Form>
 
       <Text style={{ display: "block", marginTop: 15 }}>Not signed up yet?</Text>
-      <Button type="default" block style={{ marginTop: 10, color: "#1890ff", borderColor: "#1890ff" }} onClick={() => navigate("/signup")}>
+      <Button
+        type="default"
+        block
+        style={{ marginTop: 10, color: "#1890ff", borderColor: "#1890ff" }}
+        onClick={() => navigate("/signup")}
+      >
         Sign Up
       </Button>
     </Card>
